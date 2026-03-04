@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "recruitment-test-for-python"
+version = "0.1.0"
+description = "Recruitment test for python"
+authors = ["Alma Engineering <engineering@almapay.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["standard"], version = "^0.115.6"}
+uvicorn = "^0.32.1"
+sqlalchemy = "^2.0.36"
+rich = "^13.9.4"
+
+[tool.poetry.group.dev.dependencies]
+ipdb = "^0.13.13"
+pytest = "^8.3.3"
+mypy = "^1.13.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.mypy]
+plugins = [
+    "sqlalchemy.ext.mypy.plugin",
+    "pydantic.mypy"
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
