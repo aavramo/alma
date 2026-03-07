@@ -7,8 +7,7 @@ from sqlalchemy import select
 
 from .dependencies import DBSession
 from .models import Album, Artist, Song
-from .schemas import SearchResponse, SongsCountSchema
-
+from .schemas import SearchResponse, SongsCountSchema, AlbumWithArtistsAndSongsEntry
 
 router = APIRouter(prefix="/catalog", tags=["Catalog"])
 
@@ -40,3 +39,14 @@ async def search(
     result = session.execute(stmt).scalars().all()
 
     return SearchResponse(q=q, entity=entity, count=len(result), items=result)
+
+@router.get(
+    "/album/{album_id}", name="albums", summary="Get an album by id"
+)
+async def album(session: DBSession, album_id: str) -> AlbumWithArtistsAndSongsEntry:
+
+    stmt = select(Album).where(Album.id == album_id)
+
+    album = session.execute(stmt).scalars().first()
+
+    return AlbumWithArtistsAndSongsEntry.model_validate(album)
