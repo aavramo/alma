@@ -29,6 +29,25 @@ def test_search_for_songs(client):
     )
     assert song == knocking_at_your_back_door
 
+def test_search_for_artists(client):
+    response = client.get("/catalog/search?q=hendrix&entity=artist")
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["q"] == "hendrix"
+    assert data["entity"] == "artist"
+    assert data["count"] == 1
+
+    jimi_hendrix = {
+        "id": "776Uo845nYHJpNaStv1Ds4",
+        "name": "Jimi Hendrix",
+        "followers": 3460844,
+        "popularity": 76,
+        "type": "singer",
+        "image_url": "https://i.scdn.co/image/14ce65949a921e76421a0164c17f9ebe0a8d76e8"
+    }
+    artist = data["items"][0]
+
+    assert artist == jimi_hendrix
 
 def test_search_for_albums(client):
     response = client.get("/catalog/search?q=puppets&entity=album")
