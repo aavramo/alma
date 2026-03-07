@@ -79,6 +79,25 @@ class AlbumEntry(BaseModel):
         except ValueError:
             return None
 
+class AlbumWithArtistsAndSongsEntry(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: str = Field(validation_alias='album_id')
+    name: Optional[str] = None
+    artists: list[ArtistEntry]
+    billboard: Optional[str] = None
+    popularity: Optional[int] = None
+    total_tracks: Optional[int] = None
+    type: Optional[AlbumType] = Field(None, validation_alias='album_type')
+    songs: list[SongEntry]
+
+    @field_validator('type', mode='before')
+    @classmethod
+    def validate_type(cls, value: str) -> AlbumType | None:
+        try:
+            return AlbumType(value)
+        except ValueError:
+            return None
 
 class SearchResponse(BaseModel):
     q: str
