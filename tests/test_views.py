@@ -1,6 +1,8 @@
 import pytest
 from fastapi import status
 
+from api.schemas import SongEntry
+
 
 def test_count_songs(client):
     response = client.get("/catalog/songs/count")
@@ -9,7 +11,7 @@ def test_count_songs(client):
 
 
 def test_search_for_songs(client):
-    response = client.get("/catalog/search?q=door&entity=song")
+    response = client.get("/catalog/search?q=door&entity=song&limit=30&offset=0")
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert data["q"] == "door"
@@ -29,8 +31,48 @@ def test_search_for_songs(client):
     )
     assert song == knocking_at_your_back_door
 
+def test_search_paging(client):
+    limit = 10
+    offset = 0
+    counter = 0
+    found_song = False
+
+    knocking_at_your_back_door = {
+        "id": "1VJBQdDrOblSLmoZMeh1xh",
+        "name": "Knocking At Your Back Door",
+        "billboard": "('Knocking At Your Back Door', 'Deep Purple')",
+        "popularity": 46,
+        "explicit": False,
+        "type": "Solo",
+    }
+    while counter < 24:
+        response = client.get(
+            f"/catalog/search?q=door&entity=song&limit={limit}&offset={offset}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+        data = response.json()
+        assert data["q"] == "door"
+        assert data["entity"] == "song"
+        assert data["count"] == 24
+
+        items = data["items"]
+
+        if found_song is False:
+            song = __find_by_id(items, knocking_at_your_back_door["id"])
+            if song is not None:
+                assert song == knocking_at_your_back_door
+
+        counter += len(items)
+        offset += limit
+
+def __find_by_id(data: list[SongEntry], id: str) -> SongEntry:
+    return next(
+        (song for song in data if song["id"] == id), None
+    )
+
 def test_search_for_artists(client):
-    response = client.get("/catalog/search?q=hendrix&entity=artist")
+    response = client.get("/catalog/search?q=hendrix&entity=artist&limit=10&offset=0")
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert data["q"] == "hendrix"
@@ -50,7 +92,7 @@ def test_search_for_artists(client):
     assert artist == jimi_hendrix
 
 def test_search_for_albums(client):
-    response = client.get("/catalog/search?q=puppets&entity=album")
+    response = client.get("/catalog/search?q=puppets&entity=album&limit=10&offset=0")
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert data["q"] == "puppets"
@@ -74,7 +116,7 @@ def test_search_for_albums(client):
 
 
 def test_search_invalid_entity(client):
-    response = client.get("/catalog/search?q=door&entity=invalid")
+    response = client.get("/catalog/search?q=door&entity=invalid&limit=10&offset=0")
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     assert response.json() == {
         "detail": [
