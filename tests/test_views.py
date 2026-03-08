@@ -88,6 +88,24 @@ def test_search_invalid_entity(client):
         ]
     }
 
+def test_get_album_plain_text(client):
+    response = client.get("/catalog/album/6i6folBtxKV28WX3msQ4FE", headers={"Accept":"text/plain"})
+    assert response.status_code == status.HTTP_200_OK
+    assert "text/plain" in response.headers["content-type"]
+
+    assert response.text == """Bohemian Rhapsody (The Original Soundtrack)
+
+    5. Killer Queen
+    7. Bohemian Rhapsody
+    9. Crazy Little Thing Called Love
+   12. Another One Bites The Dust
+   13. I Want To Break Free
+
+Total tracks: 22
+"""
+
+
+
 
 def test_get_album(client):
     response = client.get("/catalog/album/3I9Z1nDCL4E0cP62flcbI5")
