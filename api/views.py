@@ -3,7 +3,7 @@ from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import PlainTextResponse
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from .dependencies import DBSession
 from .models import Album, Artist, Song
@@ -27,7 +27,7 @@ async def count_songs(session: DBSession) -> SongsCountSchema:
     "/search", name="search", summary="Search for artists, albums, or songs by name"
 )
 async def search(
-    session: DBSession, q: str, entity: Literal["artist", "song", "album", "track"]
+    session: DBSession, q: str, entity: Literal["artist", "song", "album", "track"], limit: int, offset: int
 ) -> SearchResponse:
     model_mapping: dict[str, type[Album] | type[Artist] | type[Song]] = {
         "album": Album,
@@ -35,10 +35,11 @@ async def search(
         "song": Song,
     }
     model = model_mapping[entity]
-    stmt = select(model).where(model.name.like(f"%{q}%"))
+    count = session.query(func.count(model.id)).where(model.name.like(f"%{q}%")).scalar()
+    stmt = select(model).where(model.name.like(f"%{q}%")).offset(offset).limit(limit)
     result = session.execute(stmt).scalars().all()
 
-    return SearchResponse(q=q, entity=entity, count=len(result), items=result)
+    return SearchResponse(q=q, entity=entity, count=count, items=result)
 
 @router.get(
     "/album/{album_id}", name="albums", summary="Get an album by id"
