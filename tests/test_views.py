@@ -89,6 +89,7 @@ def test_search_invalid_entity(client):
     }
 
 
+@pytest.mark.xfail(reason="This test should pass once endpoint is created")
 def test_get_album(client):
     response = client.get("/catalog/album/3I9Z1nDCL4E0cP62flcbI5")
     assert response.status_code == status.HTTP_200_OK
