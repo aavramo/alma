@@ -43,10 +43,42 @@ async def search(
 @router.get(
     "/album/{album_id}", name="albums", summary="Get an album by id"
 )
-async def album(session: DBSession, album_id: str) -> AlbumWithArtistsAndSongsEntry:
-
+async def album(request: Request, session: DBSession, album_id: str) -> AlbumWithArtistsAndSongsEntry:
     stmt = select(Album).where(Album.id == album_id)
 
     album = session.execute(stmt).scalars().first()
 
+    accept = request.headers.get("accept", "")
+    if "text/plain" in accept:
+        album.songs.sort(key=lambda s: s.track.track_number)
+        return PlainTextResponse(__format_album_text_specs1(album))
+
     return AlbumWithArtistsAndSongsEntry.model_validate(album)
+
+
+def __format_album_text_specs1(album: Album) -> str:
+    lines = [f"{album.name}", ""]
+
+    for song in album.songs:
+        track_number = song.track.track_number
+        lines.append(f"{__indent(track_number)}{track_number}. {song.name}")
+
+    lines.append("")
+    lines.append(f"Total tracks: {album.total_tracks}")
+    lines.append("")
+
+    return "\n".join(lines)
+
+def __indent(track_number: int) -> str:
+    digit = len(str(track_number))
+    match digit:
+        case 1:
+            return "    "
+        case 2:
+            return "   "
+        case 3:
+            return "  "
+        case 4:
+            return " "
+        case _:
+            return ""
