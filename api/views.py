@@ -6,7 +6,7 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy import select
 
 from .dependencies import DBSession
-from .models import Album, Artist, Song, Track
+from .models import Album, Artist, Song
 from .schemas import SearchResponse, SongsCountSchema, AlbumWithArtistsAndSongsEntry
 
 router = APIRouter(prefix="/catalog", tags=["Catalog"])
