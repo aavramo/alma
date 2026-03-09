@@ -10,7 +10,7 @@ from .models import Album, Artist, Song
 from .schemas import SearchResponse, SongsCountSchema, AlbumWithArtistsAndSongsEntry
 
 router = APIRouter(prefix="/catalog", tags=["Catalog"])
-
+ 
 
 @router.get(
     "/songs/count",

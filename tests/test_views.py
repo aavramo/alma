@@ -3,7 +3,7 @@ from fastapi import status
 
 from api.schemas import SongEntry
 
-
+ 
 def test_count_songs(client):
     response = client.get("/catalog/songs/count")
     assert response.status_code == status.HTTP_200_OK
